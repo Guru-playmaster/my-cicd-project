@@ -71,11 +71,21 @@ jobs:
           script: |
             set -e
 
+            IMAGE="ghcr.io/guru-playmaster/my-cicd-project:latest"
+
             echo "=== Logging in to GHCR ==="
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u guru-playmaster --password-stdin
 
             echo "=== Pulling latest image ==="
-            docker pull ghcr.io/guru-playmaster/my-cicd-project:latest
+            docker pull $IMAGE
+
+            echo "=== Saving current image for rollback ==="
+            OLD_IMAGE=$(docker inspect --format='{{.Image}}' my-cicd-app 2>/dev/null || echo "")
+
+            if [ -n "$OLD_IMAGE" ]; then
+             docker tag "$OLD_IMAGE" my-cicd-app:rollback
+            fi
+            echo "Current image: $OLD_IMAGE"
 
             echo "=== Removing old container ==="
             docker rm -f my-cicd-app || true
@@ -85,15 +95,36 @@ jobs:
               --name my-cicd-app \
               --restart unless-stopped \
               -p 5000:5000 \
-              ghcr.io/guru-playmaster/my-cicd-project:latest
+              $IMAGE
 
-            echo "=== Waiting for application ==="
-            sleep 5
+            echo "=== Waiting for health check ==="
+            sleep 15
 
-            echo "=== Checking container ==="
-            docker ps
+            echo "=== Checking container health ==="
+            STATUS=$(docker inspect --format='{{.State.Health.Status}}' my-cicd-app)
 
-            echo "=== Testing application ==="
-            curl --fail http://localhost:5000
+            echo "Container health: $STATUS"
 
-            echo "=== Deployment successful ==="
+            if [ "$STATUS" = "healthy" ]; then
+              echo "=== Deployment successful ==="
+              docker ps
+            else
+              echo "=== Deployment failed — rolling back ==="
+
+              docker logs my-cicd-app || true
+              docker rm -f my-cicd-app || true
+
+              if [ -n "$OLD_IMAGE" ]; then
+              echo "=== Starting previous image ==="
+              docker run -d \
+              --name my-cicd-app \
+             --restart unless-stopped \
+              -p 5000:5000 \
+              my-cicd-app:rollback
+
+                sleep 10
+                docker ps
+              fi
+
+              exit 1
+            fi
