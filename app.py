@@ -8,7 +8,7 @@ def home():
     return """
     <h1>My CI/CD Project</h1>
     <p>Hello! My first DevOps application is running.</p>
-    <p>Version: 1.0</p>
+    <p>Version: 1.1</p>
     """
 
 
