@@ -56,7 +56,8 @@ jobs:
       - name: Push Docker image
         run: |
           docker push ghcr.io/guru-playmaster/my-cicd-project:latest
-            ssh-test:
+
+  ssh-test:
     needs: docker-build
     runs-on: ubuntu-latest
 
