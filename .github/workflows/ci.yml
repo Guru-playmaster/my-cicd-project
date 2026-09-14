@@ -57,3 +57,19 @@ jobs:
         run: |
           docker push ghcr.io/guru-playmaster/my-cicd-project:latest
  
+ssh-test:
+    needs: docker-build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Test SSH connection to EC2
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "SSH connection successful!"
+            whoami
+            hostname
+            docker --version
