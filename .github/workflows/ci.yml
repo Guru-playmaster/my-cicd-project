@@ -75,7 +75,7 @@ jobs:
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u guru-playmaster --password-stdin
 
             echo "=== Pulling latest image ==="
-            docker pull ghcr.io/${{ github.repository }}:latest
+            docker pull ghcr.io/guru-playmaster/my-cicd-project:latest
 
             echo "=== Removing old container ==="
             docker rm -f my-cicd-app || true
@@ -85,7 +85,7 @@ jobs:
               --name my-cicd-app \
               --restart unless-stopped \
               -p 5000:5000 \
-              ghcr.io/${{ github.repository }}:latest
+              ghcr.io/guru-playmaster/my-cicd-project:latest
 
             echo "=== Waiting for application ==="
             sleep 5
