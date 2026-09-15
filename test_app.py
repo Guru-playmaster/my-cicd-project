@@ -6,4 +6,4 @@ def test_home():
     response = client.get("/")
 
     assert response.status_code == 200
-    assert b"My CI/CD Project" in response.data
+    assert b"My CI/CD Project yes" in response.data
