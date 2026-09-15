@@ -6,7 +6,7 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     return """
-    <h1>My CI/CD Project</h1>
+    <h1>My CI/CD Project yes</h1>
     <p>Hello! My first DevOps application is running.Guru kasi</p>
     <p>Version: 2.0</p>
     """
